@@ -1,0 +1,74 @@
+# Created by https://www.toptal.com/developers/gitignore/api/android,intellij
+# Edit at https://www.toptal.com/developers/gitignore?templates=android,intellij
+
+### Android ###
+# Built application files
+*.apk
+*.aab
+*.ap_
+*.dex
+*.aapt
+output-metadata.json
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Gradle files
+.gradle/
+build/
+local.properties
+gradle-app.setting
+
+# Project specific files
+.cxx/
+.externalNativeBuild/
+
+# Pinned tools version
+.idea/pinning.xml
+
+# Keystore files
+*.jks
+*.keystore
+
+# Google Services (e.g. Firebase)
+google-services.json
+
+# Android Studio generated files
+captures/
+.DS_Store
+*.iml
+
+# My custom rules
+*.log
+*.hprof
+*.orig
+
+### IntelliJ ###
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm
+# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544519
+
+# User-specific stuff
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/vcs.xml
+.idea/codeStyles/
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/runConfigurations
+.idea/templates.xml
+.idea/jsLinters/
+.idea/sonarlint/
+.idea/gradle.xml
+.idea/misc.xml
+.idea/deploymentTargetDropDown.xml
+.idea/render.experimental.xml
+
+# Gradle caches
+.idea/gradle.xml
+
+# Caches of external dependencies
+.idea/libraries
+
+# Generated files
+.idea/codeStyles/Project.xml
