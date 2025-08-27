@@ -3,9 +3,12 @@ package com.example.photomapapp
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
@@ -16,16 +19,20 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import androidx.exifinterface.media.ExifInterface
 import java.io.IOException
 import java.io.InputStream
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private lateinit var googleMap: GoogleMap
     private val TAG = "PhotoMapApp"
+    private val MARKER_ZOOM_LEVEL = 18f
 
     // Request permissions launcher to handle permission results
     private val requestPermissionLauncher =
@@ -33,7 +40,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             if (isGranted) {
                 launchPhotoPicker()
             } else {
-                Toast.makeText(this, "Permission denied to read photos.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Permission denied.", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -41,8 +48,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private val photoPickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
-                result.data?.data?.let { uri ->
-                    processPhoto(uri)
+                // Handle multiple photos
+                val uris = mutableListOf<Uri>()
+                result.data?.clipData?.let { clipData ->
+                    for (i in 0 until clipData.itemCount) {
+                        uris.add(clipData.getItemAt(i).uri)
+                    }
+                } ?: result.data?.data?.let { uri ->
+                    // Handle single photo
+                    uris.add(uri)
+                }
+
+                if (uris.isNotEmpty()) {
+                    processPhotos(uris)
                 }
             }
         }
@@ -51,12 +69,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize the map fragment
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map_fragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        // Find the button and set the click listener
         val selectPhotoButton = findViewById<Button>(R.id.select_photo_button)
         selectPhotoButton.setOnClickListener {
             checkAndRequestPermission()
@@ -65,11 +81,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
+        googleMap.setOnMarkerClickListener(this)
+
+        // This makes the home screen map fully interactive
+        googleMap.uiSettings.isZoomControlsEnabled = true
+        googleMap.uiSettings.isScrollGesturesEnabled = true
+        googleMap.uiSettings.isZoomGesturesEnabled = true
+
         Log.d(TAG, "Map is ready")
-        // Optional: Set a default camera position to show something on the map initially
-        val sydney = LatLng(-34.0, 151.0)
-        googleMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+    }
+
+    override fun onMarkerClick(marker: Marker): Boolean {
+        // When a marker is clicked, zoom in to its exact location
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.position, MARKER_ZOOM_LEVEL))
+        marker.showInfoWindow()
+        return true
     }
 
     private fun checkAndRequestPermission() {
@@ -84,7 +110,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 launchPhotoPicker()
             }
             shouldShowRequestPermissionRationale(permission) -> {
-                Toast.makeText(this, "This app needs photo access to read GPS data from images.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "需要访问照片权限才能读取照片的 GPS 数据。", Toast.LENGTH_LONG).show()
                 requestPermissionLauncher.launch(permission)
             }
             else -> {
@@ -96,50 +122,87 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun launchPhotoPicker() {
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         photoPickerLauncher.launch(intent)
     }
 
-    private fun processPhoto(uri: Uri) {
-        var inputStream: InputStream? = null
-        try {
-            inputStream = contentResolver.openInputStream(uri)
-            if (inputStream == null) {
-                Log.e(TAG, "Could not open input stream for URI: $uri")
-                Toast.makeText(this, "Could not read photo.", Toast.LENGTH_SHORT).show()
-                return
-            }
+    private fun processPhotos(uris: List<Uri>) {
+        googleMap.clear()
 
-            val exifInterface = ExifInterface(inputStream)
-            val latLong = exifInterface.latLong
+        // Use LatLngBounds.Builder to build a bounding box around all markers
+        val builder = LatLngBounds.Builder()
+        var markerCount = 0
 
-            if (latLong != null) {
-                val latitude = latLong[0]
-                val longitude = latLong[1]
-
-                val photoLocation = LatLng(latitude, longitude)
-
-                // Add a marker on the map at the photo's location
-                googleMap.addMarker(MarkerOptions().position(photoLocation).title("Photo Location"))
-                // Move the camera to the photo's location and zoom in
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(photoLocation, 15f))
-
-                Toast.makeText(this, "Found photo location: $latitude, $longitude", Toast.LENGTH_LONG).show()
-                Log.d(TAG, "Photo location: $latitude, $longitude")
-
-            } else {
-                Toast.makeText(this, "No GPS data found in this photo.", Toast.LENGTH_SHORT).show()
-                Log.d(TAG, "No GPS data found for URI: $uri")
-            }
-
-        } catch (e: IOException) {
-            Log.e(TAG, "Error processing photo: ${e.message}")
-            Toast.makeText(this, "Error processing photo.", Toast.LENGTH_SHORT).show()
-        } finally {
+        for (uri in uris) {
+            var inputStream: InputStream? = null
             try {
-                inputStream?.close()
+                inputStream = contentResolver.openInputStream(uri)
+                if (inputStream == null) {
+                    Log.e(TAG, "Could not open input stream for URI: $uri")
+                    Toast.makeText(this, "无法读取照片。", Toast.LENGTH_SHORT).show()
+                    continue
+                }
+
+                val exifInterface = ExifInterface(inputStream)
+                val latLong = exifInterface.latLong
+                val photoName = getFileNameFromUri(uri)
+
+                if (latLong != null) {
+                    val photoLocation = LatLng(latLong[0], latLong[1])
+
+                    // Add this photo's location to the bounds builder
+                    builder.include(photoLocation)
+                    markerCount++
+
+                    // Read the image into a Bitmap and scale it
+                    val bitmap = BitmapFactory.decodeStream(contentResolver.openInputStream(uri))
+                    val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 120, 120, false)
+
+                    // Add a marker with the photo as the icon and name as the title
+                    googleMap.addMarker(MarkerOptions()
+                        .position(photoLocation)
+                        .title(photoName)
+                        .icon(BitmapDescriptorFactory.fromBitmap(resizedBitmap)))
+
+                    Log.d(TAG, "Photo location: ${latLong[0]}, ${latLong[1]}")
+
+                } else {
+                    Toast.makeText(this, "“$photoName”没有找到 GPS 数据。", Toast.LENGTH_SHORT).show()
+                    Log.d(TAG, "No GPS data found for URI: $uri")
+                }
             } catch (e: IOException) {
-                Log.e(TAG, "Error closing input stream: ${e.message}")
+                Log.e(TAG, "Error processing photo: ${e.message}")
+                Toast.makeText(this, "处理照片时出错。", Toast.LENGTH_SHORT).show()
+            } finally {
+                try {
+                    inputStream?.close()
+                } catch (e: IOException) {
+                    Log.e(TAG, "Error closing stream: ${e.message}")
+                }
             }
         }
+
+        // After processing all photos, adjust the map zoom
+        if (markerCount > 0) {
+            val bounds = builder.build()
+            val padding = 100 // Padding in pixels to ensure markers are not on the edge
+            val cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, padding)
+            googleMap.animateCamera(cameraUpdate)
+        }
+    }
+
+    private fun getFileNameFromUri(uri: Uri): String {
+        var result = "Unknown"
+        if (uri.scheme == "content") {
+            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (nameIndex != -1) {
+                        result = cursor.getString(nameIndex)
+                    }
+                }
+            }
+        }
+        return result
     }
 }
