@@ -72,3 +72,5 @@ captures/
 
 # Generated files
 .idea/codeStyles/Project.xml
+
+secrets.properties
