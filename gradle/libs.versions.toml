@@ -11,9 +11,11 @@ appcompat = "1.7.1"
 material = "1.12.0"
 constraintlayout = "2.2.1"
 exifinterface = "1.4.1"
+photoview = "2.3.0"
 
 # Google Maps SDK
 play-services-maps = "19.2.0"
+play-services-location = "21.3.0"
 
 # Image loading library
 coil = "2.7.0"
@@ -30,10 +32,11 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 google-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }
+photoview = { group = "com.github.chrisbanes", name = "PhotoView", version.ref = "photoview" }
 
 # Google Maps SDK
 google-play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "play-services-maps" }
-
+google-play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "play-services-location" }
 # Image loading library
 coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 

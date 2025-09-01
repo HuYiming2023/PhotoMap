@@ -72,3 +72,6 @@ captures/
 
 # Generated files
 .idea/codeStyles/Project.xml
+
+# Local configuration file (not committed to VCS)
+/local.properties
