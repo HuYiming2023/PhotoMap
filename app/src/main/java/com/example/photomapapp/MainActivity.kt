@@ -10,8 +10,10 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.OpenableColumns
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -50,7 +52,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     private var userCurrentLocation: LatLng? = null
     private val TAG = "PhotoMapApp"
     private val MARKER_ZOOM_LEVEL = 18f
-    private val allMarkers = mutableListOf<Marker>() // New: to store all markers for cumulative zoom
+    private val allMarkers = mutableListOf<Marker>()
 
     // LocationRequest and LocationCallback for requesting new location updates
     private lateinit var locationRequest: LocationRequest
@@ -113,17 +115,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             checkAndRequestPhotoPermission()
         }
 
-        // New: Set click listener for the return to overview button
         val fabReturnToOverview = findViewById<FloatingActionButton>(R.id.fab_return_to_overview)
         fabReturnToOverview.setOnClickListener {
             updateMapZoomToShowAllPhotos()
-            it.visibility = View.GONE // Hide button after returning to overview
+            it.visibility = View.GONE
         }
 
-        // Initialize LocationRequest and LocationCallback for location updates
         locationRequest = LocationRequest.create().apply {
-            interval = 10000 // 10 seconds
-            fastestInterval = 5000 // 5 seconds
+            interval = 10000
+            fastestInterval = 5000
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
 
@@ -140,12 +140,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
         googleMap.setOnMarkerClickListener(this)
+        googleMap.setInfoWindowAdapter(CustomInfoWindowAdapter())
 
-        // Configure map UI settings
         googleMap.uiSettings.isZoomControlsEnabled = true
         googleMap.uiSettings.isScrollGesturesEnabled = true
         googleMap.uiSettings.isZoomGesturesEnabled = true
         googleMap.uiSettings.isCompassEnabled = true
+        googleMap.uiSettings.isRotateGesturesEnabled = true
+        googleMap.uiSettings.isTiltGesturesEnabled = true
 
         checkAndRequestLocationPermission()
 
@@ -172,7 +174,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 builder.setView(dialogView)
                 val dialog = builder.create()
                 dialog.show()
-                return true
+                // Return false here so that the custom info window will be displayed
+                return false
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to display photo in dialog: ${e.message}")
                 Toast.makeText(this, "Unable to display photo.", Toast.LENGTH_SHORT).show()
@@ -181,13 +184,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         return false
     }
 
-    // Stop location updates when the Activity is paused to save battery
     override fun onPause() {
         super.onPause()
         fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
-    // --- Permission Handling and Location Methods ---
     private fun checkAndRequestPhotoPermission() {
         val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.READ_MEDIA_IMAGES
@@ -243,7 +244,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         }
     }
 
-    // New method: Request real-time location updates
     private fun requestNewLocationUpdates() {
         try {
             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
@@ -252,7 +252,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         }
     }
 
-    // --- Photo Processing Methods ---
     private fun launchPhotoPicker() {
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
@@ -261,8 +260,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     }
 
     private fun processPhotos(uris: List<Uri>) {
-        // We no longer clear the map here to support cumulative markers
-
         for (uri in uris) {
             var inputStream: InputStream? = null
             try {
@@ -293,7 +290,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             }
         }
 
-        // New: Adjust map to show all markers after processing all photos
         updateMapZoomToShowAllPhotos()
     }
 
@@ -308,7 +304,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                         if (location != null) {
                             val newLocation = LatLng(location.latitude, location.longitude)
                             addMarkerToMap(uri, newLocation)
-                            // After adding, update the map zoom
                             updateMapZoomToShowAllPhotos()
                         } else {
                             Toast.makeText(this, "Unable to get your current location, the photo could not be added.", Toast.LENGTH_SHORT).show()
@@ -334,12 +329,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
             marker = googleMap.addMarker(MarkerOptions()
                 .position(location)
-                .title(photoName)
                 .icon(BitmapDescriptorFactory.fromBitmap(resizedBitmap)))
 
             marker?.tag = uri
             marker?.let {
-                allMarkers.add(it) // New: Add marker to our list
+                it.title = photoName
+                allMarkers.add(it)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to create marker from URI: ${e.message}")
@@ -362,7 +357,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         return result
     }
 
-    // New method: Update map bounds to show all existing markers
     private fun updateMapZoomToShowAllPhotos() {
         if (allMarkers.isEmpty()) {
             return
@@ -374,10 +368,30 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         }
 
         val bounds = builder.build()
-        val padding = 100 // Padding in pixels
+        val padding = 100
         val cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, padding)
 
-        // Use animateCamera for a smoother transition
         googleMap.animateCamera(cameraUpdate)
+    }
+
+    inner class CustomInfoWindowAdapter : GoogleMap.InfoWindowAdapter {
+        private val window = LayoutInflater.from(this@MainActivity).inflate(R.layout.custom_marker_info_window, null)
+
+        override fun getInfoWindow(marker: Marker): View? {
+            renderWindowText(marker, window)
+            return window
+        }
+
+        override fun getInfoContents(marker: Marker): View? {
+            return null
+        }
+
+        private fun renderWindowText(marker: Marker, view: View) {
+            val titleTextView = view.findViewById<TextView>(R.id.marker_title)
+            val title = marker.title
+            if (title != null) {
+                titleTextView.text = title
+            }
+        }
     }
 }
