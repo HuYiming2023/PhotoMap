@@ -11,7 +11,9 @@ android {
     buildFeatures {
         buildConfig = true
     }
-
+    buildFeatures {
+        viewBinding = true
+    }
     defaultConfig {
         applicationId = "com.example.photomapapp"
         minSdk = 24
@@ -51,7 +53,6 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.exifinterface)
     implementation(libs.photoview) // Photo viewer library
-
     // Google Services for Maps and Location
     implementation(libs.google.play.services.maps)
     implementation(libs.google.play.services.location)
