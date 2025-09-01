@@ -20,8 +20,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Build configuration field for the Google Maps API Key
         buildConfigField("String", "MAPS_API_KEY", "\"AIzaSyCa6uipgjmFeucnr_pPiZATI_r_8opSTEw\"")
-
     }
 
     buildTypes {
@@ -50,14 +50,14 @@ dependencies {
     implementation(libs.google.material)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.exifinterface)
-    implementation(libs.photoview) // This was missing from one of your versions
+    implementation(libs.photoview) // Photo viewer library
 
-    // Google Services
+    // Google Services for Maps and Location
     implementation(libs.google.play.services.maps)
-    implementation(libs.google.play.services.location) // Corrected from google.services.location
+    implementation(libs.google.play.services.location)
     implementation(libs.gson)
 
-    // Image loading library
+    // Image loading library (though not directly used in the code, it's declared)
     implementation(libs.coil.kt)
 
     // Testing libraries
