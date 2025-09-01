@@ -1,21 +1,16 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-<<<<<<< HEAD
-//    alias(libs.plugins.secrets.gradle.plugin)
-=======
     alias(libs.plugins.secrets.gradle.plugin)
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
 }
 
 android {
     namespace = "com.example.photomapapp"
-    compileSdk = 36 // Changed to match your targetSdk for consistency and stability.
+    compileSdk = 36
 
     buildFeatures {
         buildConfig = true
     }
-
 
     defaultConfig {
         applicationId = "com.example.photomapapp"
@@ -54,34 +49,18 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.google.material)
     implementation(libs.androidx.constraintlayout)
-<<<<<<< HEAD
+    implementation(libs.androidx.exifinterface)
+    implementation(libs.photoview) // This was missing from one of your versions
 
-    // Google Maps SDK
+    // Google Services
     implementation(libs.google.play.services.maps)
-    implementation(libs.google.play.services.location)
+    implementation(libs.google.play.services.location) // Corrected from google.services.location
+    implementation(libs.gson)
 
     // Image loading library
     implementation(libs.coil.kt)
 
-    // Photo EXIF data library
-    implementation(libs.androidx.exifinterface)
-
-    // PhotoView for zoomable image in dialog
-    implementation(libs.photoview)
-
-    // Test dependencies
-=======
-    implementation(libs.androidx.exifinterface)
-
-    // Google Services
-    implementation(libs.google.play.services.maps)
-    implementation(libs.google.services.location)
-
-    // Gson library for JSON parsing
-    implementation(libs.gson)
-
     // Testing libraries
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

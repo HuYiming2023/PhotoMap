@@ -226,12 +226,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
-<<<<<<< HEAD
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
-=======
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -243,13 +240,7 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import androidx.exifinterface.media.ExifInterface
-<<<<<<< HEAD
 import com.github.chrisbanes.photoview.PhotoView
-=======
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import java.io.File
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
 import java.io.IOException
 import java.io.InputStream
 
@@ -257,16 +248,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
     private lateinit var googleMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-<<<<<<< HEAD
     private var userCurrentLocation: LatLng? = null
-=======
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
     private val TAG = "PhotoMapApp"
     private val MARKER_ZOOM_LEVEL = 18f
-    private val photoMarkers = mutableListOf<PhotoMarker>()
-    private val FILE_NAME = "photo_markers.json"
 
-<<<<<<< HEAD
     // LocationRequest and LocationCallback for requesting new location updates
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
@@ -289,28 +274,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 launchPhotoPicker()
             } else {
                 Toast.makeText(this, "Access to photos is required to read photo data.", Toast.LENGTH_SHORT).show()
-=======
-    // Request permissions for photos and location
-    private val permissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            when {
-                permissions[getPhotoPermission()] == true && permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true -> {
-                    // Both permissions granted
-                    launchPhotoPicker()
-                    enableMyLocation()
-                }
-                permissions[getPhotoPermission()] == true -> {
-                    // Only photo permission granted
-                    launchPhotoPicker()
-                }
-                permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true -> {
-                    // Only location permission granted
-                    enableMyLocation()
-                }
-                else -> {
-                    Toast.makeText(this, "Permissions were denied.", Toast.LENGTH_SHORT).show()
-                }
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
             }
         }
 
@@ -345,7 +308,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
         val selectPhotoButton = findViewById<Button>(R.id.select_photo_button)
         selectPhotoButton.setOnClickListener {
-<<<<<<< HEAD
             checkAndRequestPhotoPermission()
         }
 
@@ -363,9 +325,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                     Log.d(TAG, "Got a fresh location update: ${userCurrentLocation?.latitude}, ${userCurrentLocation?.longitude}")
                 }
             }
-=======
-            checkAndRequestPermissions()
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
         }
     }
 
@@ -376,19 +335,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         googleMap.uiSettings.isZoomControlsEnabled = true
         googleMap.uiSettings.isScrollGesturesEnabled = true
         googleMap.uiSettings.isZoomGesturesEnabled = true
-<<<<<<< HEAD
         googleMap.uiSettings.isCompassEnabled = true
 
         checkAndRequestLocationPermission()
-=======
-        googleMap.uiSettings.isMyLocationButtonEnabled = true
-        googleMap.uiSettings.isCompassEnabled = true
-
-        checkAndRequestPermissions()
-        loadMarkersFromFile()
-        displayMarkersOnMap()
-        adjustCameraToMarkers()
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
 
         Log.d(TAG, "Map is ready")
     }
@@ -417,28 +366,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         return false
     }
 
-<<<<<<< HEAD
     private fun checkAndRequestPhotoPermission() {
         val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-=======
-    private fun checkAndRequestPermissions() {
-        val photoPermission = getPhotoPermission()
-        val locationPermission = Manifest.permission.ACCESS_FINE_LOCATION
-
-        val permissions = arrayOf(photoPermission, locationPermission)
-        permissionLauncher.launch(permissions)
-    }
-
-    private fun getPhotoPermission(): String {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
             Manifest.permission.READ_MEDIA_IMAGES
         } else {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
-    }
 
-<<<<<<< HEAD
         when {
             ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> {
                 launchPhotoPicker()
@@ -450,11 +384,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             else -> {
                 requestPhotoPermissionLauncher.launch(permission)
             }
-=======
-    private fun enableMyLocation() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            googleMap.isMyLocationEnabled = true
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
         }
     }
 
@@ -515,13 +444,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     }
 
     private fun processPhotos(uris: List<Uri>) {
-<<<<<<< HEAD
         googleMap.clear()
         val builder = LatLngBounds.Builder()
         var markerCount = 0
 
-=======
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
         for (uri in uris) {
             var inputStream: InputStream? = null
             try {
@@ -536,7 +462,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
                 if (latLong != null) {
                     val photoLocation = LatLng(latLong[0], latLong[1])
-<<<<<<< HEAD
                     addMarkerToMap(uri, photoLocation)
                     builder.include(photoLocation)
                     markerCount++
@@ -546,14 +471,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             } catch (e: IOException) {
                 Log.e(TAG, "Error processing photo: ${e.message}")
                 Toast.makeText(this, "Error processing photo.", Toast.LENGTH_SHORT).show()
-=======
-                    addMarkerToList(photoLocation, photoName, uri)
-                } else {
-                    promptForLocation(uri, photoName)
-                }
-            } catch (e: IOException) {
-                Log.e(TAG, "Error processing photo: ${e.message}")
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
             } finally {
                 try {
                     inputStream?.close()
@@ -562,88 +479,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 }
             }
         }
-        saveMarkersToFile()
-        displayMarkersOnMap()
-        adjustCameraToMarkers()
-    }
 
-<<<<<<< HEAD
         // Final map adjustment after all photos have been processed
         if (markerCount > 0) {
             val bounds = builder.build()
             val padding = 100
             val cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, padding)
             googleMap.animateCamera(cameraUpdate)
-=======
-    private fun promptForLocation(uri: Uri, photoName: String) {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("GPS数据缺失")
-        builder.setMessage("照片“$photoName”没有找到GPS数据。你想使用当前位置吗？")
-        builder.setPositiveButton("是") { _, _ ->
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                    if (location != null) {
-                        val photoLocation = LatLng(location.latitude, location.longitude)
-                        addMarkerToList(photoLocation, photoName, uri)
-                        saveMarkersToFile()
-                        displayMarkersOnMap()
-                        adjustCameraToMarkers()
-                    } else {
-                        Toast.makeText(this, "无法获取当前位置。", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } else {
-                Toast.makeText(this, "未授予位置权限。", Toast.LENGTH_SHORT).show()
-            }
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
         }
-        builder.setNegativeButton("否") { _, _ ->
-            Toast.makeText(this, "照片已被忽略。", Toast.LENGTH_SHORT).show()
-        }
-        builder.show()
-    }
-
-    private fun addMarkerToList(location: LatLng, name: String, uri: Uri) {
-        val marker = PhotoMarker(location.latitude, location.longitude, name, uri.toString())
-        photoMarkers.add(marker)
-        Log.d(TAG, "Added marker: $marker")
-    }
-
-    private fun displayMarkersOnMap() {
-        googleMap.clear()
-        for (marker in photoMarkers) {
-            val location = LatLng(marker.latitude, marker.longitude)
-            val uri = Uri.parse(marker.uri)
-
-            var bitmap: Bitmap? = null
-            try {
-                bitmap = BitmapFactory.decodeStream(contentResolver.openInputStream(uri))
-            } catch (e: IOException) {
-                Log.e(TAG, "Error decoding bitmap: ${e.message}")
-            }
-
-            bitmap?.let {
-                val resizedBitmap = Bitmap.createScaledBitmap(it, 120, 120, false)
-                googleMap.addMarker(MarkerOptions()
-                    .position(location)
-                    .title(marker.name)
-                    .icon(BitmapDescriptorFactory.fromBitmap(resizedBitmap)))
-            }
-        }
-    }
-
-    private fun adjustCameraToMarkers() {
-        if (photoMarkers.isEmpty()) {
-            return
-        }
-        val builder = LatLngBounds.Builder()
-        for (marker in photoMarkers) {
-            builder.include(LatLng(marker.latitude, marker.longitude))
-        }
-        val bounds = builder.build()
-        val padding = 150
-        val cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, padding)
-        googleMap.animateCamera(cameraUpdate)
     }
 
     private fun handlePhotoWithoutGps(uri: Uri, builder: LatLngBounds.Builder, markerCount: Int) {
@@ -702,31 +545,4 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         }
         return result
     }
-
-    private fun saveMarkersToFile() {
-        val jsonString = Gson().toJson(photoMarkers)
-        try {
-            openFileOutput(FILE_NAME, MODE_PRIVATE).use {
-                it.write(jsonString.toByteArray())
-            }
-        } catch (e: IOException) {
-            Log.e(TAG, "Error saving markers: ${e.message}")
-        }
-    }
-
-    private fun loadMarkersFromFile() {
-        val file = File(filesDir, FILE_NAME)
-        if (file.exists()) {
-            try {
-                val jsonString = openFileInput(FILE_NAME).bufferedReader().use { it.readText() }
-                val type = object : TypeToken<MutableList<PhotoMarker>>() {}.type
-                photoMarkers.addAll(Gson().fromJson(jsonString, type))
-            } catch (e: IOException) {
-                Log.e(TAG, "Error loading markers: ${e.message}")
-            }
-        }
-    }
 }
-
-// Data class to save marker information
-data class PhotoMarker(val latitude: Double, val longitude: Double, val name: String, val uri: String)

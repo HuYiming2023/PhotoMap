@@ -16,11 +16,7 @@ photoview = "2.3.0"
 
 # Google Maps SDK
 play-services-maps = "19.2.0"
-<<<<<<< HEAD
 play-services-location = "21.3.0"
-=======
-play-services-location = "21.0.1"
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
 
 # Image loading library
 coil = "2.7.0"
@@ -41,13 +37,9 @@ photoview = { group = "com.github.chrisbanes", name = "PhotoView", version.ref =
 
 # Google Maps SDK
 google-play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "play-services-maps" }
-<<<<<<< HEAD
 google-play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "play-services-location" }
-=======
-google-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "play-services-location" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
->>>>>>> d58b837438c1a118847fd3a3cce42afcf7f2b944
 # Image loading library
 coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 
